@@ -1,0 +1,26 @@
+{
+  "compilerOptions": {
+    "target": "ES6",                          // Цель компиляции — ECMAScript 6 (ES6)
+    "module": "NodeNext",                     // Модульная система — CommonJS (для Node.js)
+    "outDir": "./dist",                       // Папка для скомпилированных файлов
+    "rootDir": "./src",                       // Папка исходных файлов (по умолчанию ./src)
+    "strict": true,                           // Включение всех строгих проверок
+    "esModuleInterop": true,                  // Для импорта CommonJS модулей в ES6
+    "skipLibCheck": true,                     // Пропуск проверки типов в библиотеках
+    "forceConsistentCasingInFileNames": true, // Принудительное соблюдение регистра имен файлов
+    "resolveJsonModule": true,                // Разрешение импорта .json файлов
+    "moduleResolution": "nodenext",               // Режим разрешения модулей — для Node.js
+    "allowJs": true,                          // Разрешить использование JavaScript файлов
+    "noImplicitAny": true,                    // Запретить тип `any` (жесткое типизирование)
+    "noUnusedLocals": true,                   // Запретить неиспользуемые локальные переменные
+    "noUnusedParameters": true,               // Запретить неиспользуемые параметры
+    "strictNullChecks": true                  // Включить строгую проверку null/undefined
+  },
+  "include": [
+    "src/**/*",                      // Включаем все файлы в папке src
+  ],
+  "exclude": [
+    "node_modules",                           // Исключаем папку node_modules
+    "dist"                                    // Исключаем папку dist
+  ]
+}
