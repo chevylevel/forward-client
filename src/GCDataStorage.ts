@@ -1,6 +1,11 @@
 import { Bucket, Storage } from '@google-cloud/storage';
 import { SecretManagerServiceClient } from '@google-cloud/secret-manager';
-import { BUCKET_NAME, SESSION_FILE } from '.';
+import { BUCKET_NAME } from '.';
+
+type GetPreferenceParams = {
+    fileName: string;
+    key: string
+}
 
 export class GCDataStorage {
     storage: Storage;
@@ -33,57 +38,55 @@ export class GCDataStorage {
             return new GCDataStorage(credentials);
         } catch (error) {
             console.log('Create cloud storage error:');
+
+            return null;
         }
     }
 
-    async getSession(userId: number): Promise<string> {
+    async savePreference(userId: string, payload: Record<string, string>) {
         try {
-            const [file] = await this.bucket.file(SESSION_FILE!).download();
-            return JSON.parse(file.toString())[userId];
-
-        } catch (err) {
-            console.warn("Session file not found. Creating a new one...");
-
-            await this.saveSession({ [userId]: '' });
-            return '';
-        }
-    }
-
-    async saveSession(session: Record<string, string>): Promise<void> {
-        try {
-            await this.bucket.file(SESSION_FILE!).save(JSON.stringify(session, null, 2), {
-                contentType: "application/json",
-            });
-
-            console.log("Session saved to Cloud Storage.");
-        } catch (err) {
-            console.error("Failed to save session:", err);
-        }
-    }
-
-    async saveWelcomeMessage(userId: number, text: string) {
-        try {
-            const file = this.bucket.file(`preferences/${userId}.json`);
+            const file = this.bucket.file(`${userId}.json`);
             await file.save(
-                JSON.stringify({ text }, null, 2),
+                JSON.stringify(payload, null, 2),
                 { contentType: 'application/json' }
             );
 
             console.log(`Saved welcome message for ${userId}`);
         } catch (error) {
-            console.log(`Save welcome message of user ${userId} error:`, error);
+            console.log(`Save prefernce of user ${userId} error:`, error);
         }
     }
 
-    async getWelcomeMessage(userId: number): Promise<string|null> {
+    async getPreferences(key: string): Promise<{ [x: string]: any; }> {
         try {
-            const file = this.bucket.file(`preferences/${userId}.json`);
-            const data = await file.download();
-            return JSON.parse(data.toString()).text;
+            const [files] = await this.bucket.getFiles();
+            if (!files.length) return [];
+
+            const dataPromises = files.map(async (file) => {
+                const data = await file.download();
+
+                return { [file.name.split('.')[0]]: JSON.parse(data.toString())[key] }
+            });
+
+            return (await Promise.all(dataPromises)).reduce((acc, item) => {
+                return Object.assign(acc, item);
+            }, {});
+
         } catch (error) {
-            console.log(`Get welcome message of user ${userId}  error:`, error);
-            return null;
+            console.log(`Get preferences error:`, error);
+
+            return [];
         }
     }
 
+    async getPreference(fileName: string, key: string): Promise<string | undefined> {
+        try {
+            const file = this.bucket.file(`${fileName}.json`);
+            const data = await file.download();
+
+            return JSON.parse(data.toString())[key];
+        } catch (error) {
+            console.log(`Get preference of ${fileName || "unknown"} error:`, error);
+        }
+    }
 }
