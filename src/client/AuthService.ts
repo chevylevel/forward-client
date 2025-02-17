@@ -1,4 +1,4 @@
-import { API_HASH, API_ID } from '../index';
+import { API_HASH, API_ID, SERVICE_PHONE } from '../index';
 import { AuthenticateParams, RequestCodeParams } from "../types";
 import { GCDataStorage } from "../GCDataStorage";
 import { BaseClient } from "./BaseClient";
@@ -20,6 +20,7 @@ export class AuthService {
         let baseClient = this.clients.get(userId);
 
         if (!baseClient) {
+            console.log('creating new client', userId);
             baseClient = new BaseClient();
             this.clients.set(userId, baseClient);
         }
@@ -36,7 +37,6 @@ export class AuthService {
             onError,
         }: RequestCodeParams) {
         const client = await this.getClient(userId);
-
 
         console.log('sending code', client?.connected);
         try {
@@ -72,16 +72,19 @@ export class AuthService {
         try {
             if (!client.connected) throw new Error('Client is not connected on SignIn');
 
-            const result = await client?.invoke(
+            await client?.invoke(
                 new Api.auth.SignIn({
                     phoneNumber,
                     phoneCodeHash,
                     phoneCode,
                 })
             );
-            console.log('AuthResult', result);
+
+            console.log('signIn success');
 
             await this.saveSession(userId);
+
+            console.log('saveSession success');
         } catch (error) {
             onError();
             throw new Error(`authService.signIn error: ${error}`,);
@@ -94,14 +97,26 @@ export class AuthService {
         try {
             return await client?.getMe();
         } catch (error) {
+            console.log(`catch getMe no client, ${error}`);
             return null;
+        }
+    }
+
+    async isAuth(userId: string) {
+        const client = await this.getClient(userId);
+
+        try {
+            return await client.isUserAuthorized();
+        } catch (error) {
+            console.log(`isUserAuthorized checking error: ${error}`);
+            return false;
         }
     }
 
     private async saveSession(userId: string) {
         const session = this.clients.get(userId)?.session;
 
-        console.log('session', session);
-        session && this.storage.savePreference(userId, { session: session.save() });
+        console.log('saveSession', session?.serverAddress);
+        session && await this.storage.savePreference(userId, { session: session.save() });
     }
 }

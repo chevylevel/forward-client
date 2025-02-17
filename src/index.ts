@@ -1,6 +1,6 @@
 import dotenv from 'dotenv';
 
-import { Bot } from './Bot';
+import { Bot } from './bot/Bot';
 import { GCDataStorage } from './GCDataStorage';
 import { BaseClient } from './client/BaseClient';
 import { AuthService } from './client/AuthService';
@@ -22,16 +22,18 @@ export const SERVICE_PHONE = process.env.SERVICE_PHONE;
 
     for (const userId in userSessions) {
         const session = userId && userSessions[userId];
-
         const client = new BaseClient(session);
+        await client.connect();
 
         clients.set(userId, client);
     }
 
+    console.log('init clients', clients.size);
+
     const authService = new AuthService(clients, storage);
     const bot = new Bot(storage, authService);
 
-    bot.init();
+    await bot.init();
 
     process.on("SIGINT", () => {
         console.log("Shutting down gracefully...");

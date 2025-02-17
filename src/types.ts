@@ -22,6 +22,7 @@ export enum BotActions {
     VIEW_TEMPLATE = 'view_template',
     ACCEPT = 'accept',
     DECLINE = 'decline',
+    CANCEL = 'cancel',
 }
 
 export enum BotCommands {
@@ -37,9 +38,9 @@ export interface UserState {
 }
 
 export type ForwardOrigin = {
-    forward_origin: {
-        sender_user: {
-            id: number
+    forward_origin?: {
+        sender_user?: {
+            id?: number
         }
     }
 };

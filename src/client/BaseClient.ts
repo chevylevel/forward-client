@@ -6,14 +6,16 @@ export class BaseClient {
     client: TelegramClient;
     session: StringSession;
 
-    constructor(session?: StringSession, ) {
-        this.session = session || new StringSession();
+    constructor(session?: string,) {
+        this.session = new StringSession(session || '');
 
         this.client = new TelegramClient(
             this.session,
             API_ID,
             API_HASH!,
-            { connectionRetries: 5 }
+            {
+                connectionRetries: 5,
+            }
         );
     }
 
@@ -21,6 +23,7 @@ export class BaseClient {
         try {
             if (!this.client.connected) {
                 await this.client.connect();
+                console.log('client connected:', this.client.connected);
             }
         } catch (error) {
             console.log('Client connection error:', error);

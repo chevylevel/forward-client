@@ -18,7 +18,8 @@ export class ServiceClient {
                 func(event) {
                     return !event.isPrivate
                 },
-            }));
+            })
+        );
     }
 
     async handleNewMessage(event: NewMessageEvent) {

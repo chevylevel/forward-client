@@ -46,12 +46,20 @@ export class GCDataStorage {
     async savePreference(userId: string, payload: Record<string, string>) {
         try {
             const file = this.bucket.file(`${userId}.json`);
+            const [exists] = await file.exists();
+            let currentUserData = {};
+
+            if (exists) {
+                const data = await file.download();
+                currentUserData = JSON.parse(data.toString());
+            }
+
             await file.save(
-                JSON.stringify(payload, null, 2),
+                JSON.stringify({ ...currentUserData, ...payload }, null, 2),
                 { contentType: 'application/json' }
             );
 
-            console.log(`Saved welcome message for ${userId}`);
+            console.log(`Saved ${payload} for ${userId}`);
         } catch (error) {
             console.log(`Save prefernce of user ${userId} error:`, error);
         }
@@ -80,11 +88,24 @@ export class GCDataStorage {
     }
 
     async getPreference(fileName: string, key: string): Promise<string | undefined> {
+        console.log('getPreference', fileName, key);
         try {
             const file = this.bucket.file(`${fileName}.json`);
+            const [exists] = await file.exists();
+
+            if (!exists) {
+                console.warn(`File ${fileName}.json does not exist.`);
+
+                await file.save(JSON.stringify({}), {
+                    contentType: 'application/json',
+                });
+
+                return;
+            }
+
             const data = await file.download();
 
-            return JSON.parse(data.toString())[key];
+            return JSON.parse(data.toString())?.[key];
         } catch (error) {
             console.log(`Get preference of ${fileName || "unknown"} error:`, error);
         }
