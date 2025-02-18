@@ -5,7 +5,9 @@ export async function aiTestMessage(userMessage) {
             body: JSON.stringify({
                 contents: [{
                     parts: [{
-                        text: `Является ли данное сообщение из публичного канала Telegram запросом на обучение серфингу? В ответ пришли только "true" или "false". Сообщение: "${userMessage}"`
+                        text: `Является ли данное сообщение из публичного канала Telegram запросом на обучение серфингу
+                        / поиск инструктора, в любой форме, прямо или косвенно? Сообщение: "${userMessage}"
+                        В ответ пришли только "true" или "false".`
                     }]
                 }]
             }),
