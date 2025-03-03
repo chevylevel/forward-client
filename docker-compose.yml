@@ -12,6 +12,7 @@ services:
     command: sh -c "npm run run:auth && npm run dev"
 
   forward-client-prod:
+    image: chevylevel/forward-client-prod:latest
     build:
       context: .
       dockerfile: Dockerfile.prod
