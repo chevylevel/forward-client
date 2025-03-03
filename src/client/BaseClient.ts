@@ -1,33 +1,31 @@
 import { TelegramClient } from "telegram";
-import { API_HASH, API_ID } from '../index';
 import { StringSession } from "telegram/sessions";
 
 export class BaseClient {
     client: TelegramClient;
     session: StringSession;
 
-    constructor(session?: string,) {
-        this.session = new StringSession(session || '');
+    constructor() {
+        this.session = new StringSession(process.env.SESSION);
 
         this.client = new TelegramClient(
             this.session,
-            API_ID,
-            API_HASH!,
+            parseInt(process.env.API_ID!),
+            process.env.API_HASH!,
             {
                 connectionRetries: 5,
             }
         );
     }
 
-    async connect(onError?: () => void) {
+    async connect() {
         try {
             if (!this.client.connected) {
                 await this.client.connect();
                 console.log('client connected:', this.client.connected);
             }
         } catch (error) {
-            console.log('Client connection error:', error);
-            onError && onError();
+            console.error('Client connection error:', error);
         }
     }
 }

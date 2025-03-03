@@ -1,49 +1,10 @@
 import dotenv from 'dotenv';
-
-import { Bot } from './bot/Bot';
-import { GCDataStorage } from './GCDataStorage';
-import { BaseClient } from './client/BaseClient';
-import { AuthService } from './client/AuthService';
+import { ServiceClient } from './client/ServiceClient';
 
 dotenv.config();
 
-export const API_ID = Number(process.env.API_ID);
-export const API_HASH = process.env.API_HASH;
-export const BOT_USERNAME = process.env.BOT_USERNAME;
-export const BUCKET_NAME = process.env.BUCKET_NAME;
-export const SERVICE_PHONE = process.env.SERVICE_PHONE;
-
 (async function () {
-    const storage = await GCDataStorage.create();
-    if (!storage) return;
-
-    const userSessions = await storage.getPreferences('session');
-    const clients = new Map<string, BaseClient>();
-
-    for (const userId in userSessions) {
-        const session = userId && userSessions[userId];
-        const client = new BaseClient(session);
-        await client.connect();
-
-        clients.set(userId, client);
-    }
-
-    console.log('init clients', clients.size);
-
-    const authService = new AuthService(clients, storage);
-    const bot = new Bot(storage, authService);
-
-    await bot.init();
-
-    process.on("SIGINT", () => {
-        console.log("Shutting down gracefully...");
-        bot.bot.stop();
-        process.exit(0);
-    });
-
-    process.on("SIGTERM", () => {
-        console.log("Received SIGTERM. Shutting down gracefully...");
-        bot.bot.stop();
-        process.exit(0);
-    });
+    const client = new ServiceClient();
+    client.init();
+    await client.connect();
 })();

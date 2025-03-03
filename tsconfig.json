@@ -17,7 +17,7 @@
     "strictNullChecks": true                  // Включить строгую проверку null/undefined
   },
   "include": [
-    "src/**/*",                      // Включаем все файлы в папке src
+    "src/**/*"                       // Включаем все файлы в папке src
   ],
   "exclude": [
     "node_modules",                           // Исключаем папку node_modules
